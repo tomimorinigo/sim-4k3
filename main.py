@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
 
 st.set_page_config(
     page_title="Trabajo Práctico 02",
@@ -133,14 +134,46 @@ if generar_btn:
         st.dataframe(tabla)
     # Histograma
     with tab2:
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.set_style("whitegrid")
-        ax = sns.histplot(numeros, bins=bins, ax=ax, color="steelblue", edgecolor="black", label="Frecuencia")
+        fig = px.histogram(
+            numeros, 
+            nbins=len(bins)-1,  # Convertimos el array de bins a un número entero
+            title=f"Histograma de la Distribución {distribucion} ({tamano_muestra} muestras)",
+            labels={'x': 'Valor', 'y': 'Frecuencia'},
+            color_discrete_sequence=['#9C27B0']
+        )
+        
+        # Configurar los rangos del eje x según los bins calculados
+        fig.update_traces(
+            xbins=dict(
+                start=min(bins),
+                end=max(bins),
+                size=(max(bins)-min(bins))/(len(bins)-1)
+            ),
+            marker_line_color='#6A1B9A',
+            marker_line_width=1.5,
+            opacity=0.8,
+            showlegend=False,  # Eliminar la leyenda
+            hovertemplate="Valor: %{x}<br>Frecuencia: %{y}<extra></extra>"  # Personalizar el tooltip
+        )
+        
+        fig.update_layout(
+            plot_bgcolor='#2C2C2C',
+            paper_bgcolor='#2C2C2C',
+            font_color='white',
+            title_x=0.5,
+            bargap=0.1,
+            xaxis_title="Valor",
+            yaxis_title="Frecuencia",
+            showlegend=False  # Asegurarnos que la leyenda no se muestre
+        )
+        
+        fig.update_traces(
+            marker_line_color='#6A1B9A',
+            marker_line_width=1.5,
+            opacity=0.8
+        )
 
-        ax.set_title(f"Histograma de la Distribución {distribucion} ({tamano_muestra} muestras)")
-        ax.set_xlabel("Valor")
-        ax.set_ylabel("Frecuencia")
-        st.pyplot(fig)
+        st.plotly_chart(fig, use_container_width=True)
 
 # INSTRUCCIONES
 if 'numeros' not in locals():
