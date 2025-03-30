@@ -161,7 +161,7 @@ if generar_btn:
             paper_bgcolor='#2C2C2C',
             font_color='white',
             title_x=0.5,
-            bargap=0.1,
+            bargap=0,  # Eliminar el espacio entre barras
             xaxis_title="Valor",
             yaxis_title="Frecuencia",
             showlegend=False  # Asegurarnos que la leyenda no se muestre
