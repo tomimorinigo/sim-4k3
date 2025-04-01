@@ -3,8 +3,6 @@ import streamlit as st
 import random
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import plotly.express as px
 
 st.set_page_config(
@@ -56,7 +54,7 @@ with st.sidebar:
     generar_btn = st.button("Generar Distribución", type="primary")
 
 def generar_numeros_aleatorios(distribucion, tamano_muestra, params):
-    random.seed(42)
+    random.seed(100)
 
     numeros = []
 
@@ -86,6 +84,9 @@ def generar_numeros_aleatorios(distribucion, tamano_muestra, params):
             numeros.append(round(z1 * sigma + mu, 4))
             i += 1
 
+            # Si i es menor que el tamaño de la muestra, generamos otro numero
+            # aleatorio utilizando la segunda parte de la formula de Box Muller
+            # Esto soluciona el problema de que tamano_muestra sea impar
             if i < tamano_muestra:
                 numeros.append(round(z2 * sigma + mu, 4))
                 i += 1
@@ -136,7 +137,7 @@ if generar_btn:
     with tab2:
         fig = px.histogram(
             numeros, 
-            nbins=len(bins)-1,  # Convertimos el array de bins a un número entero
+            nbins=len(bins)-1,  # Convertir el array de bins a un número entero
             title=f"Histograma de la Distribución {distribucion} ({tamano_muestra} muestras)",
             labels={'x': 'Valor', 'y': 'Frecuencia'},
             color_discrete_sequence=['#9C27B0']
@@ -164,7 +165,7 @@ if generar_btn:
             bargap=0,  # Eliminar el espacio entre barras
             xaxis_title="Valor",
             yaxis_title="Frecuencia",
-            showlegend=False  # Asegurarnos que la leyenda no se muestre
+            showlegend=False  # No mostrar leyenda
         )
         
         fig.update_traces(
@@ -186,20 +187,22 @@ if 'numeros' not in locals():
     5. Haz clic en "Generar Distribución" para ver los resultados
     """)
     
-    # Mostrar información sobre cada distribución y métodos de generación
+    # Info sobre cada distribucion
     with st.expander("Información sobre las Distribuciones y Métodos de Generación"):
         st.markdown("""
         ### Distribución Uniforme [a, b]
-        La distribución uniforme genera números aleatorios con igual probabilidad en un intervalo [a, b].
+        La distribución uniforme genera números aleatorios con igual probabilidad en un intervalo [a, b].\n
         **Método de generación**: Uso directo de `random.uniform(a, b)` de Python.
         
         ### Distribución Exponencial
         La distribución exponencial modela el tiempo entre eventos en un proceso de Poisson.
-        El parámetro lambda (λ) representa la tasa de ocurrencia de los eventos.
-        **Método de generación**: Transformación inversa usando `F⁻¹(u) = -ln(u)/λ` donde u es un número aleatorio uniforme.
-        
+        El parámetro lambda (λ) representa la tasa de ocurrencia de los eventos.\n
+        **Método de generación**: Utilización de fórmula `Xi = ln(1 - RND)/ -λ` donde RND es un número aleatorio uniforme.
+
         ### Distribución Normal
         La distribución normal o gaussiana es simétrica alrededor de su media (μ) y
-        dispersa según su desviación estándar (σ).
-        **Método de generación**: Método de Box-Muller que transforma números aleatorios uniformes en variables aleatorias normales estándar.
+        dispersa según su desviación estándar (σ).\n
+        **Método de generación**: Método de Box-Muller con las siguiente fórmulas.\n
+        `Z1 = sqrt(-2 * ln(RND1)) * cos(2 * π * RND2)`\n
+        `Z2 = sqrt(-2 * ln(RND1)) * sin(2 * π * RND2)`\n
         """)
