@@ -73,7 +73,7 @@ def generar_numeros_aleatorios(distribucion, tamano_muestra, params):
     
     elif distribucion == "Normal":
         mu, sigma = params
-        i = 0 # Hace referencia a la cantidad de números aleatorios generados
+        i = 0 # Cantidad de numeros aleatorios generados
 
         while i < tamano_muestra:
             # Generamos un numero aleatorio utilizando la formula de Box Muller
@@ -137,13 +137,12 @@ if generar_btn:
     with tab2:
         fig = px.histogram(
             numeros, 
-            nbins=len(bins)-1,  # Convertir el array de bins a un número entero
+            nbins=len(bins)-1,  
             title=f"Histograma de la Distribución {distribucion} ({tamano_muestra} muestras)",
             labels={'x': 'Valor', 'y': 'Frecuencia'},
             color_discrete_sequence=['#9C27B0']
         )
         
-        # Configurar los rangos del eje x según los bins calculados
         fig.update_traces(
             xbins=dict(
                 start=min(bins),
@@ -153,8 +152,8 @@ if generar_btn:
             marker_line_color='#6A1B9A',
             marker_line_width=1.5,
             opacity=0.8,
-            showlegend=False,  # Eliminar la leyenda
-            hovertemplate="Valor: %{x}<br>Frecuencia: %{y}<extra></extra>"  # Personalizar el tooltip
+            showlegend=False,
+            hovertemplate="Valor: %{x}<br>Frecuencia: %{y}<extra></extra>"
         )
         
         fig.update_layout(
@@ -162,10 +161,10 @@ if generar_btn:
             paper_bgcolor='#2C2C2C',
             font_color='white',
             title_x=0.5,
-            bargap=0,  # Eliminar el espacio entre barras
+            bargap=0,
             xaxis_title="Valor",
             yaxis_title="Frecuencia",
-            showlegend=False  # No mostrar leyenda
+            showlegend=False 
         )
         
         fig.update_traces(
