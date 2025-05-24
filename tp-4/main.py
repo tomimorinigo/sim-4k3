@@ -325,8 +325,16 @@ if generar_btn:
                         )
 
                 estado_cancha = "Ocupada"
+                contador_colas -= 1
                 objetos_temporales[0]["estado"] = "En Juego"
                 grupo_ocupando = objetos_temporales[0]["disciplina"]
+                #acumulo los tiempos de espera segun la disciplina.
+                if disciplina == "Futbol":
+                    esperas_acum["Futbol"] += reloj - objetos_temporales[0]["tiempo_llegada"]
+                elif disciplina == "Handball":
+                    esperas_acum["Handball"] += reloj - objetos_temporales[0]["tiempo_llegada"]
+                else:
+                    esperas_acum["Basketball"] += reloj - objetos_temporales[0]["tiempo_llegada"]
 
                 # Generamos el tiempo de ocupacion
                 tiempo_ocupacion = generar_ocupacion(objetos_temporales[0]["disciplina"])
@@ -343,10 +351,17 @@ if generar_btn:
                 estado_cancha = "Disponible"
                 continue
 
+promedio_espera = {
+    "espera_futbol" : esperas_acum["Futbol"]/contadores["Futbol"] if contadores["Futbol"] != 0 else 0,
+    "espera_basket" : esperas_acum["Basketball"]/contadores["Basketball"] if contadores["Basketball"] != 0 else 0,
+    "espera_handball" : esperas_acum["Handball"]/contadores["Handball"] if contadores["Handball"] != 0 else 0}
+
+print(f"promedio espera futbol: {promedio_espera['espera_futbol']}\n Promedio espera Handball: {promedio_espera['espera_handball']}\n Promedio espera basket: {promedio_espera['espera_basket']}")
+print(f"promedio de ocupacion por dia: {tiempo_ocupacion_acum/dia if dia != 0 else tiempo_ocupacion_acum}")
+
 # TODO: 
-# 1. Calcular tiempos de esperas. Y sacar estadisticas con el tiempo de ocupacion tmb
-# 2. Generar vector de estados
-# 3. Construir tabla y mostrarla
+# 1. Generar vector de estados
+# 2. Construir tabla y mostrarla
 
 
            
