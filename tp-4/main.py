@@ -146,35 +146,36 @@ with st.sidebar:
 
     
     generar_btn = st.button("Arrancar simulación", type="primary")
+    limpiar_btn = st.button("Limpiar tabla acumulativa", type="secondary")
 
 def generar_llegada(disciplina):
     if disciplina == "Futbol":
         lambda_param = 1 / media_llegadas_futbol
         params = (lambda_param)
-        return utils.generar_numeros_aleatorios("Exponencial", 10, params)
+        return utils.generar_numeros_aleatorios("Exponencial", params)
     elif disciplina == "Handball":
         a, b = limite_inf_llegadas_handball, limite_sup_llegadas_handball
         params = (a, b)
-        return utils.generar_numeros_aleatorios("Uniforme", 10, params)
+        return utils.generar_numeros_aleatorios("Uniforme", params)
     elif disciplina == "Basketball":
         a, b = limite_inf_llegadas_basketball, limite_sup_llegadas_basketball
         params = (a, b)
-        return utils.generar_numeros_aleatorios("Uniforme", 10, params)
+        return utils.generar_numeros_aleatorios("Uniforme", params)
     
 
 def generar_ocupacion(disciplina):
     if disciplina == "Futbol":
         a, b = limite_inf_ocupacion_futbol, limite_sup_ocupacion_futbol
         params = (a, b)
-        return utils.generar_numeros_aleatorios("Uniforme", 1, params)
+        return utils.generar_numeros_aleatorios("Uniforme", params)
     elif disciplina == "Handball":
         a, b = limite_inf_ocupacion_handball, limite_sup_ocupacion_handball
         params = (a, b)
-        return utils.generar_numeros_aleatorios("Uniforme", 1, params)
+        return utils.generar_numeros_aleatorios("Uniforme", params)
     elif disciplina == "Basketball":
         a, b = limite_inf_ocupacion_basketball, limite_sup_ocupacion_basketball
         params = (a, b)
-        return utils.generar_numeros_aleatorios("Uniforme", 1, params)
+        return utils.generar_numeros_aleatorios("Uniforme", params)
 
 def inicializar_tabla_estado():
     """
@@ -202,49 +203,8 @@ def agregar_fila_tabla(vector_estado):
         st.error("Error: vector_estado debe ser una lista con diccionarios o un diccionario")
         return
     
-    # Procesar objetos temporales - manejo robusto de casos vacíos
-    #objetos_temp = estado_actual.get("objetos_temporales", [])
-    #temp_str = ""
-    
-    # Verificar si existe y no está vacío
-
-    #    if objetos_temp and len(objetos_temp) > 0:
-    #   temp_str = "; ".join([
-    #       f"Disciplina: {obj.get('disciplina', 'N/A')}, "
-    #       f"T.Llegada: {obj.get('tiempo_llegada', 'N/A')}, "
-    #       f"T.Espera: {obj.get('tiempo_espera', 'N/A')}, "
-    #       f"Estado: {obj.get('estado', 'N/A')}"
-    #       for obj in objetos_temp
-    #       if obj  # Filtrar objetos None o vacíos
-    #   ])
-    #else:
-    #   temp_str = "Sin objetos temporales"
-    
     # Crear nueva fila
-    nueva_fila = {
-        "Nro. Evento": estado_actual.get("nro.evento", ""),
-        "Evento": estado_actual.get("evento", ""),
-        "Reloj": estado_actual.get("reloj", ""),
-        "Próxima Llegada Fútbol": estado_actual.get("proxima_llegada_futbol", ""),
-        "Próxima Llegada Handball": estado_actual.get("proxima_llegada_handball", ""),
-        "Próxima Llegada Basketball": estado_actual.get("proxima_llegada_basketball", ""),
-        "Fin Ocupación": estado_actual.get("fin_ocupacion", ""),
-        "Fin Limpieza": estado_actual.get("fin_limpieza", ""),
-        "Estado Cancha": estado_actual.get("estado_cancha", ""),
-        "Grupo Ocupando": estado_actual.get("grupo_ocupando", ""),
-        "Cola Fútbol": estado_actual.get("cola_futbol", ""),
-        "Cola Handball": estado_actual.get("cola_handball", ""),
-        "Cola Basketball": estado_actual.get("colas_basketball", ""),
-        "Contador Colas": estado_actual.get("contador_colas", ""),
-        "Espera Acum. Fútbol": estado_actual.get("espera_acum_futbol", ""),
-        "Contador Fútbol": estado_actual.get("contador_futbol", ""),
-        "Espera Acum. Handball": estado_actual.get("espera_acum_handball", ""),
-        "Contador Handball": estado_actual.get("contador_handball", ""),
-        "Espera Acum. Basketball": estado_actual.get("espera_acum_basketball", ""),
-        "Contador Basketball": estado_actual.get("contador_basketball", ""),
-        "Día": estado_actual.get("dia", ""),
-        "Tiempo Ocupación": estado_actual.get("tiempo_ocupacion", "")
-    }
+    nueva_fila = utils.generar_nueva_fila(estado_actual, True)
     
     # Agregar fila al DataFrame existente
     nueva_fila_df = pd.DataFrame([nueva_fila])
@@ -254,17 +214,9 @@ def agregar_fila_tabla(vector_estado):
     )
 
 def mostrar_tabla_acumulativa(titulo="Tabla de Estados Acumulativa", container=None):
-    """
-    Muestra la tabla acumulativa actual
-    
-    Args:
-        titulo (str): Título para mostrar encima de la tabla
-        container: Container de Streamlit donde mostrar la tabla (opcional)
-    """
-    # Inicializar si no existe
+    """Muestra la tabla acumulativa actual"""
     inicializar_tabla_estado()
     
-    # Usar container si se proporciona, sino usar st directamente
     ctx = container if container else st
     
     ctx.subheader(titulo)
@@ -276,11 +228,7 @@ def mostrar_tabla_acumulativa(titulo="Tabla de Estados Acumulativa", container=N
             use_container_width=True,
             hide_index=True
         )
-        
-        # Mostrar información de la tabla
-        ctx.info(f"Total de eventos registrados: {len(st.session_state.tabla_estados)}")
-        
-        # Opción para descargar como CSV
+                
         csv = st.session_state.tabla_estados.to_csv(index=False)
         ctx.download_button(
             label="Descargar tabla completa como CSV",
@@ -291,80 +239,64 @@ def mostrar_tabla_acumulativa(titulo="Tabla de Estados Acumulativa", container=N
     else:
         ctx.warning("No hay datos para mostrar")
 
-def actualizar_tabla_en_contenedor(contenedor):
-    """
-    Actualiza la tabla en un contenedor específico
-    
-    Args:
-        contenedor: Container de Streamlit donde actualizar la tabla
-    """
-    with contenedor:
-        mostrar_tabla_acumulativa("Tabla de Estados Acumulativa")
-
 def limpiar_tabla():
-    """
-    Limpia la tabla acumulativa (útil para reiniciar simulación)
-    """
+    """Limpia la tabla acumulativa"""
     st.session_state.tabla_estados = pd.DataFrame()
     st.success("Tabla limpiada")
 
-def obtener_tabla_actual():
-    """
-    Retorna el DataFrame actual para usar en otros lugares
-    
-    Returns:
-        pandas.DataFrame: DataFrame con todos los estados acumulados
-    """
-    inicializar_tabla_estado()
-    return st.session_state.tabla_estados
 
-
-# Constantes
-max_iteraciones = 1000000
-limpieza_duracion = 10
-cant_iteraciones_mostrar = iteraciones_mostrar
-
-# Variables iniciales
-
-eventos = []
-vector_estado = []
-vector_estado_anterior = []
-
-reloj = 0
-nro_evento = 0
-estado_cancha = "Disponible"
-grupo_ocupando = None
-colas = {
-    "Futbol": 0,
-    "Handball": 0,
-    "Basketball": 0
-}
-contador_colas = 0
-esperas_acum = {
-    "Futbol": 0,
-    "Handball": 0,
-    "Basketball": 0
-}
-contadores = {
-    "Futbol": 0,
-    "Handball": 0,
-    "Basketball": 0
-}
-dia = 0
-tiempo_ocupacion_acum = 0
-objetos_temporales = []
-
-disciplinas = ["Futbol", "Handball", "Basketball"]
+if limpiar_btn:
+    limpiar_tabla()
 
 if generar_btn:
+
+    # Constantes
+    max_iteraciones = 1000000
+    limpieza_duracion = 10
+    cant_iteraciones_mostrar = iteraciones_mostrar
+
+    # Variables iniciales
+
+    eventos = []
+    vector_estado = []
+    vector_estado_anterior = []
+
+    reloj = 0
+    nro_evento = 0
+    estado_cancha = "Disponible"
+    grupo_ocupando = None
+    colas = {
+        "Futbol": 0,
+        "Handball": 0,
+        "Basketball": 0
+    }
+    contador_colas = 0
+    esperas_acum = {
+        "Futbol": 0,
+        "Handball": 0,
+        "Basketball": 0
+    }
+    contadores = {
+        "Futbol": 0,
+        "Handball": 0,
+        "Basketball": 0
+    }
+    dia = 0
+    tiempo_ocupacion_acum = 0
+    objetos_temporales = []
+    contador_objetos = 0 
+
+    disciplinas = ["Futbol", "Handball", "Basketball"]
+
     # Generar llegadas iniciales
     for d in disciplinas:
-        llegada = generar_llegada(d)
+        llegada, rnd = generar_llegada(d)
         eventos.append({
             "evento": f"Llegada Grupo de {d}",
             "disciplina": d,
-            "tiempo_entre_llegada": round(llegada[0] * 60, 2),
-            "proximo_evento": round(llegada[0] * 60, 2),
+            "RND": rnd,
+            "tiempo_entre_llegada": round(llegada * 60, 2),
+            "proximo_evento": round(llegada * 60, 2),
         })
         
     # Simulacion
@@ -384,20 +316,24 @@ if generar_btn:
 
         if evento == f"Llegada Grupo de {disciplina}":
             # Agregamos el evento de llegada del siguiente grupo
-            tiempo_llegada = generar_llegada(disciplina)
+            tiempo_llegada, rnd = generar_llegada(disciplina)
             eventos.append({
                 "evento": f"Llegada Grupo de {disciplina}",
                 "disciplina": disciplina,
-                "tiempo_entre_llegada": round(tiempo_llegada[0] * 60, 2),
-                "proximo_evento": reloj + round(tiempo_llegada[0] * 60, 2),
+                "RND": rnd,
+                "tiempo_entre_llegada": round(tiempo_llegada * 60, 2),
+                "proximo_evento": reloj + round(tiempo_llegada * 60, 2),
             })
 
             if contador_colas > 6:
                 # Si hay mas de 6 grupos esperando, no se permite la llegada de nuevos grupos
                 continue
 
+            contador_objetos += 1
+            print(f"Contador de objetos: {contador_objetos}")
             # Creamos un objeto temporal para el grupo
             objeto_temporal = {
+                "id": contador_objetos,
                 "disciplina": disciplina,
                 "tiempo_llegada": reloj,
                 "tiempo_espera": 0,
@@ -410,168 +346,161 @@ if generar_btn:
                 objeto_temporal["estado"] = "En Juego"
                 grupo_ocupando = disciplina
                 # Generamos el tiempo de ocupacion
-                tiempo_ocupacion = generar_ocupacion(disciplina)
+                tiempo_ocupacion, rnd = generar_ocupacion(disciplina)
 
                 # Agregamos el evento de fin de ocupacion
                 eventos.append({
                     "evento": f"Fin Ocupacion",
+                    "RND": rnd,
                     "disciplina": disciplina,
-                    "tiempo_ocupacion": round(tiempo_ocupacion[0], 2),
-                    "proximo_evento": reloj + round(tiempo_ocupacion[0], 2),
+                    "tiempo_ocupacion": round(tiempo_ocupacion, 2),
+                    "proximo_evento": reloj + round(tiempo_ocupacion, 2),
                 })
 
                 contadores[disciplina] += 1
 
-            if estado_cancha == "Ocupada" or estado_cancha == "Limpieza":
-                # Si la cancha esta ocupada o en limpieza, agregamos el grupo a la cola
+            else:
                 colas[disciplina] += 1
                 contador_colas += 1
                 objeto_temporal["estado"] = "Esperando"
             
             objetos_temporales.append(objeto_temporal)
 
-        if evento == "Fin Ocupacion":
+        elif evento == "Fin Ocupacion":
             # Se libera la cancha
             estado_cancha = "Limpieza"
             grupo_ocupando = None
 
-            # Agregamos el evento de fin de limpieza
+            # Sumamos el tiempo de ocupacion a nuestro acumulador
+            tiempo_ocupacion_acum += evento_actual["tiempo_ocupacion"]
+           
+            # Remover grupo que terminó
+            objetos_temporales = [obj for obj in objetos_temporales if obj["estado"] != "En Juego"]
+            
             eventos.append({
                 "evento": "Fin Limpieza",
                 "proximo_evento": reloj + limpieza_duracion,
             })
 
-            # Sumamos el tiempo de ocupacion a nuestro acumulador
-            tiempo_ocupacion_acum += evento_actual["tiempo_ocupacion"]
-           
-            # Al grupo que estaba ocupando, lo borramos de los objetos temporales
-            for objeto in objetos_temporales:
-                if objeto["estado"] == "En Juego":
-                    objetos_temporales.remove(objeto)
-                    break
-
-        if evento == "Fin Limpieza":
+        elif evento == "Fin Limpieza":
             # Se termina de limpiar la cancha
             # Verificamos las colas
             if contador_colas > 0:
                 objetos_temporales.sort(key=lambda x: x["tiempo_llegada"])
-                objetos_temporales[0]
+                siguiente_grupo = None
 
-                if objetos_temporales[0]["disciplina"] == "Basketball":
-                    tiene_otros_deportes = any(
-                        grupo["disciplina"] in ["Futbol", "Handball"] for grupo in objetos_temporales
-                    )
+                basketball_grupos = [obj for obj in objetos_temporales if obj["disciplina"] == "Basketball" and obj["estado"] == "Esperando"]
+                otros_grupos = [obj for obj in objetos_temporales if obj["disciplina"] in ["Futbol", "Handball"] and obj["estado"] == "Esperando"]
+                
+                if otros_grupos:
+                    siguiente_grupo = otros_grupos[0]
+                elif basketball_grupos:
+                    siguiente_grupo = basketball_grupos[0]
+                
+                if siguiente_grupo:
+                    estado_cancha = "Ocupada"
+                    contador_colas -= 1
+                    colas[siguiente_grupo["disciplina"]] -= 1
 
-                    if tiene_otros_deportes:
-                        # Si hay otros deportes, estos tienen prioridad
-                        siguiente_grupo = next(
-                            (grupo for grupo in objetos_temporales if grupo["disciplina"] in ["Futbol", "Handball"]),
-                            None
-                        )
+                    siguiente_grupo["estado"] = "En Juego"
+                    grupo_ocupando = siguiente_grupo["disciplina"]
 
-                estado_cancha = "Ocupada"
-                contador_colas -= 1
-                objetos_temporales[0]["estado"] = "En Juego"
-                grupo_ocupando = objetos_temporales[0]["disciplina"]
-                #acumulo los tiempos de espera segun la disciplina.
-                if disciplina == "Futbol":
-                    esperas_acum["Futbol"] += reloj - objetos_temporales[0]["tiempo_llegada"]
-                elif disciplina == "Handball":
-                    esperas_acum["Handball"] += reloj - objetos_temporales[0]["tiempo_llegada"]
-                else:
-                    esperas_acum["Basketball"] += reloj - objetos_temporales[0]["tiempo_llegada"]
-
-                # Generamos el tiempo de ocupacion
-                tiempo_ocupacion = generar_ocupacion(objetos_temporales[0]["disciplina"])
-
-                # Agregamos el evento de fin de ocupacion
-                eventos.append({
-                    "evento": f"Fin Ocupacion",
-                    "disciplina": disciplina,
-                    "tiempo_ocupacion": round(tiempo_ocupacion[0], 2),
-                    "proximo_evento": reloj + round(tiempo_ocupacion[0], 2),
-                })
-
+                    # Acumulo los tiempos de espera segun la disciplina.
+                    tiempo_espera = reloj - siguiente_grupo["tiempo_llegada"]
+                    esperas_acum[siguiente_grupo["disciplina"]] += tiempo_espera
+                    contadores[siguiente_grupo["disciplina"]] += 1
+                    
+                    # Generamos el tiempo de ocupacion
+                    tiempo_ocupacion, rnd = generar_ocupacion(siguiente_grupo["disciplina"])
+                    eventos.append({
+                        "evento": f"Fin Ocupacion",
+                        "RND": rnd,
+                        "disciplina": siguiente_grupo["disciplina"],
+                        "tiempo_ocupacion": round(tiempo_ocupacion, 2),
+                        "proximo_evento": reloj + round(tiempo_ocupacion, 2),
+                    })
             else:
                 estado_cancha = "Disponible"
-                continue
-        proxima_llegada_futbol = next((evento["proximo_evento"] for evento in eventos if evento["evento"] == "Llegada Grupo de Futbol" and evento["disciplina"] == "Futbol"), None)
-        proxima_llegada_basketball = next((evento["proximo_evento"] for evento in eventos if evento["evento"] == "Llegada Grupo de Basketball" and evento["disciplina"] == "Basketball"), None)
-        proxima_llegada_handball = next((evento["proximo_evento"] for evento in eventos if evento["evento"] == "Llegada Grupo de Handball" and evento["disciplina"] == "Handball"), None)
-        fin_limpieza = ""
-        grupo_ocupando = ""
-        if estado_cancha == "Limpieza":
-            fin_limpieza = reloj + limpieza_duracion
-        elif estado_cancha == "Ocupada":
-            grp_ocupando = grupo_ocupando
-        if vector_estado == []:
-            vector_estado.append({
-                "nro.evento": iteracion,
-                "evento" : evento,
-                "reloj" : reloj,
-                "proxima_llegada_futbol": proxima_llegada_futbol,
-                "proxima_llegada_handball": proxima_llegada_handball,
-                "proxima_llegada_basketball": proxima_llegada_basketball,
-                "fin_ocupacion": reloj + round(tiempo_llegada[0] * 60, 2),
-                "fin_limpieza": fin_limpieza,
-                "estado_cancha": estado_cancha,
-                "grupo_ocupando": grp_ocupando,
-                "cola_futbol": colas["Futbol"],
-                "cola_handball": colas["Handball"],
-                "colas_basketball": colas["Basketball"],
-                "contador_colas": contador_colas,
-                "espera_acum_futbol":esperas_acum["Futbol"],
-                "contador_futbol": contadores["Futbol"],
-                "espera_acum_handball":esperas_acum["Handball"],
-                "contador_handball": contadores["Handball"],
-                "espera_acum_basketball":esperas_acum["Basketball"],
-                "contador_basketball": contadores["Basketball"],
-                "dia":dia,
-                "tiempo_ocupacion":tiempo_ocupacion_acum
-            })
-        else:
-            vector_estado_anterior = vector_estado.pop()
-            vector_estado.append({
-                "nro.evento": iteracion,
-                "evento" : evento,
-                "reloj" : reloj,
-                "proxima_llegada_futbol": proxima_llegada_futbol,
-                "proxima_llegada_handball": proxima_llegada_handball,
-                "proxima_llegada_basketball": proxima_llegada_basketball,
-                "fin_ocupacion": reloj + round(tiempo_llegada[0] * 60, 2),
-                "fin_limpieza": fin_limpieza,
-                "estado_cancha": estado_cancha,
-                "grupo_ocupando": grp_ocupando,
-                "cola_futbol": colas["Futbol"],
-                "cola_handball": colas["Handball"],
-                "colas_basketball": colas["Basketball"],
-                "contador_colas": contador_colas,
-                "espera_acum_futbol":esperas_acum["Futbol"],
-                "contador_futbol": contadores["Futbol"],
-                "espera_acum_handball":esperas_acum["Handball"],
-                "contador_handball": contadores["Handball"],
-                "espera_acum_basketball":esperas_acum["Basketball"],
-                "contador_basketball": contadores["Basketball"],
-                "dia":dia,
-                "tiempo_ocupacion":tiempo_ocupacion_acum
-            })
-        if reloj >= min_inicio_mostrar and cant_iteraciones_mostrar >= 1:
+
+        proxima_llegada_futbol = next((evento for evento in eventos if evento["evento"] == "Llegada Grupo de Futbol" and evento["disciplina"] == "Futbol"), None)
+        proxima_llegada_basketball = next((evento for evento in eventos if evento["evento"] == "Llegada Grupo de Basketball" and evento["disciplina"] == "Basketball"), None)
+        proxima_llegada_handball = next((evento for evento in eventos if evento["evento"] == "Llegada Grupo de Handball" and evento["disciplina"] == "Handball"), None)
+        
+        evento_fin_ocupacion = next((evento for evento in eventos if evento["evento"] == "Fin Ocupacion"), None)
+        fin_limpieza = next((evento["proximo_evento"] for evento in eventos if evento["evento"] == "Fin Limpieza"), None)
+
+        # Crear vector de estado
+        estado_dict = {
+            "nro_evento": iteracion + 1,
+            "evento": evento,
+            "reloj": reloj,
+            "rnd_proxima_llegada_futbol": proxima_llegada_futbol["RND"] if proxima_llegada_futbol else None,
+            "proxima_llegada_futbol": proxima_llegada_futbol["proximo_evento"] if proxima_llegada_futbol else None,
+            "rnd_proxima_llegada_handball": proxima_llegada_handball["RND"] if proxima_llegada_handball else None,
+            "proxima_llegada_handball": proxima_llegada_handball["proximo_evento"] if proxima_llegada_handball else None,
+            "rnd_proxima_llegada_basketball": proxima_llegada_basketball["RND"] if proxima_llegada_basketball else None,
+            "proxima_llegada_basketball": proxima_llegada_basketball["proximo_evento"] if proxima_llegada_basketball else None,
+            "rnd_fin_ocupacion": evento_fin_ocupacion["RND"] if evento_fin_ocupacion else None,
+            "fin_ocupacion": evento_fin_ocupacion["proximo_evento"] if evento_fin_ocupacion else None,
+            "fin_limpieza": fin_limpieza,
+            "estado_cancha": estado_cancha,
+            "grupo_ocupando": grupo_ocupando,
+            "cola_futbol": colas["Futbol"],
+            "cola_handball": colas["Handball"],
+            "cola_basketball": colas["Basketball"],
+            "contador_colas": contador_colas,
+            "espera_acum_futbol": esperas_acum["Futbol"],
+            "contador_futbol": contadores["Futbol"],
+            "espera_acum_handball": esperas_acum["Handball"],
+            "contador_handball": contadores["Handball"],
+            "espera_acum_basketball": esperas_acum["Basketball"],
+            "contador_basketball": contadores["Basketball"],
+            "dia": dia,
+            "tiempo_ocupacion": tiempo_ocupacion_acum,
+            "objetos_temporales": objetos_temporales.copy()
+        }
+        
+        # Actualizar vector de estado (mantener solo el último)
+        vector_estado = [estado_dict]
+        
+        # Agregar a tabla si corresponde mostrar
+        if reloj >= min_inicio_mostrar and cant_iteraciones_mostrar > 0:
             cant_iteraciones_mostrar -= 1
             agregar_fila_tabla(vector_estado)
+
     mostrar_tabla_acumulativa()
-                
 
-promedio_espera = {
-    "espera_futbol" : esperas_acum["Futbol"]/contadores["Futbol"] if contadores["Futbol"] != 0 else 0,
-    "espera_basket" : esperas_acum["Basketball"]/contadores["Basketball"] if contadores["Basketball"] != 0 else 0,
-    "espera_handball" : esperas_acum["Handball"]/contadores["Handball"] if contadores["Handball"] != 0 else 0}
+    # Mostrar la última fila del vector de estado
+    st.subheader("Último Estado de la Simulación")
+    if vector_estado:
+        ultimo_estado_df = pd.DataFrame([vector_estado[-1]])
+        fila = utils.generar_nueva_fila(ultimo_estado_df)
+        st.dataframe(
+            fila,
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.info("Aún no se ha generado ninguna simulación.")
 
-print(f"promedio espera futbol: {promedio_espera['espera_futbol']}\n Promedio espera Handball: {promedio_espera['espera_handball']}\n Promedio espera basket: {promedio_espera['espera_basket']}")
-print(f"promedio de ocupacion por dia: {tiempo_ocupacion_acum/dia if dia != 0 else tiempo_ocupacion_acum}")
-
-# TODO: 
-# 1. sacar de la pantalla principal los objetos creados
-# 2. agragar a la pantalla los calculos realizados
-
+    # Calcular y mostrar estadísticas finales
+    st.subheader("Estadísticas Finales")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("Promedio Espera Fútbol", 
+                 f"{esperas_acum['Futbol']/contadores['Futbol']:.2f} min" if contadores['Futbol'] > 0 else "0 min")
+    
+    with col2:
+        st.metric("Promedio Espera Handball", 
+                 f"{esperas_acum['Handball']/contadores['Handball']:.2f} min" if contadores['Handball'] > 0 else "0 min")
+    
+    with col3:
+        st.metric("Promedio Espera Basketball", 
+                 f"{esperas_acum['Basketball']/contadores['Basketball']:.2f} min" if contadores['Basketball'] > 0 else "0 min")
+    
+    st.metric("Promedio de Ocupación por Día", 
+             f"{tiempo_ocupacion_acum/dia:.2f} min/día" if dia > 0 else f"{tiempo_ocupacion_acum:.2f} min")
 
            
