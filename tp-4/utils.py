@@ -9,8 +9,8 @@ def generar_numeros_aleatorios(distribucion, params):
 
     if distribucion == "Uniforme":
         a, b = params
-        numero_generado = round(random.uniform(a, b), 4)
-        rnd = numero_generado
+        rnd = random.uniform(0, 1)
+        numero_generado = a + (b - a) * rnd
 
     elif distribucion == "Exponencial":
         lambda_param = params
@@ -27,10 +27,13 @@ def generar_nueva_fila(estado_actual, con_objetos_temporales=False):
         "Evento": estado_actual.get("evento", ""),
         "Reloj": estado_actual.get("reloj", ""),
         "RND Próxima Llegada Fútbol": estado_actual.get("rnd_proxima_llegada_futbol", ""),
+        "Tiempo entre llegadas Fútbol": estado_actual.get("tiempo_entre_llegada_futbol", ""),
         "Próxima Llegada Fútbol": estado_actual.get("proxima_llegada_futbol", ""),
         "RND Próxima Llegada Handball": estado_actual.get("rnd_proxima_llegada_handball", ""),
+        "Tiempo entre llegadas Handball": estado_actual.get("tiempo_entre_llegada_handball", ""),
         "Próxima Llegada Handball": estado_actual.get("proxima_llegada_handball", ""),
         "RND Próxima Llegada Basketball": estado_actual.get("rnd_proxima_llegada_basketball", ""),
+        "Tiempo entre llegadas Basketball": estado_actual.get("tiempo_entre_llegada_basketball", ""),
         "Próxima Llegada Basketball": estado_actual.get("proxima_llegada_basketball", ""),
         "RND Fin Ocupación": estado_actual.get("rnd_fin_ocupacion", ""),
         "Fin Ocupación": estado_actual.get("fin_ocupacion", ""),

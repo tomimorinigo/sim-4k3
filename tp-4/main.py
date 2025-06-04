@@ -242,7 +242,7 @@ def mostrar_tabla_acumulativa(titulo="Tabla de Estados Acumulativa", container=N
 def limpiar_tabla():
     """Limpia la tabla acumulativa"""
     st.session_state.tabla_estados = pd.DataFrame()
-    st.success("Tabla limpiada")
+    st.success("Tabla limpia")
 
 
 if limpiar_btn:
@@ -281,7 +281,7 @@ if generar_btn:
         "Handball": 0,
         "Basketball": 0
     }
-    dia = 0
+    dia = 1
     tiempo_ocupacion_acum = 0
     objetos_temporales = []
     contador_objetos = 0 
@@ -305,7 +305,7 @@ if generar_btn:
             break
 
         # Actualizamos nuestro numero de dia
-        dia = reloj // 1440  # 1440 minutos en un dia
+        dia = (reloj // 1440) + 1  # 1440 minutos en un dia
 
         eventos.sort(key=lambda x: x["proximo_evento"])
         evento_actual = eventos.pop(0)
@@ -325,12 +325,11 @@ if generar_btn:
                 "proximo_evento": reloj + round(tiempo_llegada * 60, 2),
             })
 
-            if contador_colas > 6:
+            if contador_colas >= 6:
                 # Si hay mas de 6 grupos esperando, no se permite la llegada de nuevos grupos
                 continue
 
             contador_objetos += 1
-            print(f"Contador de objetos: {contador_objetos}")
             # Creamos un objeto temporal para el grupo
             objeto_temporal = {
                 "id": contador_objetos,
@@ -427,6 +426,7 @@ if generar_btn:
         proxima_llegada_handball = next((evento for evento in eventos if evento["evento"] == "Llegada Grupo de Handball" and evento["disciplina"] == "Handball"), None)
         
         evento_fin_ocupacion = next((evento for evento in eventos if evento["evento"] == "Fin Ocupacion"), None)
+        print(f"Evento fin ocupacion: {evento_fin_ocupacion}")
         fin_limpieza = next((evento["proximo_evento"] for evento in eventos if evento["evento"] == "Fin Limpieza"), None)
 
         # Crear vector de estado
@@ -435,10 +435,13 @@ if generar_btn:
             "evento": evento,
             "reloj": reloj,
             "rnd_proxima_llegada_futbol": proxima_llegada_futbol["RND"] if proxima_llegada_futbol else None,
+            "tiempo_entre_llegada_futbol": proxima_llegada_futbol["tiempo_entre_llegada"] if proxima_llegada_futbol else None,
             "proxima_llegada_futbol": proxima_llegada_futbol["proximo_evento"] if proxima_llegada_futbol else None,
             "rnd_proxima_llegada_handball": proxima_llegada_handball["RND"] if proxima_llegada_handball else None,
+            "tiempo_entre_llegada_handball": proxima_llegada_handball["tiempo_entre_llegada"] if proxima_llegada_handball else None,
             "proxima_llegada_handball": proxima_llegada_handball["proximo_evento"] if proxima_llegada_handball else None,
             "rnd_proxima_llegada_basketball": proxima_llegada_basketball["RND"] if proxima_llegada_basketball else None,
+            "tiempo_entre_llegada_basketball": proxima_llegada_basketball["tiempo_entre_llegada"] if proxima_llegada_basketball else None,
             "proxima_llegada_basketball": proxima_llegada_basketball["proximo_evento"] if proxima_llegada_basketball else None,
             "rnd_fin_ocupacion": evento_fin_ocupacion["RND"] if evento_fin_ocupacion else None,
             "fin_ocupacion": evento_fin_ocupacion["proximo_evento"] if evento_fin_ocupacion else None,
