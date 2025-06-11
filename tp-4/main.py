@@ -204,10 +204,12 @@ def agregar_fila_tabla(vector_estado):
         return
     
     # Crear nueva fila
-    nueva_fila = utils.generar_nueva_fila(estado_actual, True)
+    nueva_fila = utils.generar_nueva_fila_multiindex(estado_actual, True)
     
     # Agregar fila al DataFrame existente
     nueva_fila_df = pd.DataFrame([nueva_fila])
+    nueva_fila_df.columns = pd.MultiIndex.from_tuples(nueva_fila_df.columns, names=['Categoría', 'Campo'])
+
     st.session_state.tabla_estados = pd.concat(
         [st.session_state.tabla_estados, nueva_fila_df], 
         ignore_index=True
@@ -460,7 +462,7 @@ if generar_btn:
             "contador_basketball": contadores["Basketball"],
             "dia": dia,
             "tiempo_ocupacion": tiempo_ocupacion_acum,
-            "objetos_temporales": objetos_temporales.copy()
+            "objetos_temporales": objetos_temporales
         }
         
         # Actualizar vector de estado (mantener solo el último)
@@ -477,7 +479,7 @@ if generar_btn:
     st.subheader("Último Estado de la Simulación")
     if vector_estado:
         ultimo_estado_df = pd.DataFrame([vector_estado[-1]])
-        fila = utils.generar_nueva_fila(ultimo_estado_df)
+        fila = utils.generar_nueva_fila_multiindex(ultimo_estado_df, False)
         st.dataframe(
             fila,
             use_container_width=True,
